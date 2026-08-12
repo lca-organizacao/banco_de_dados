@@ -1,0 +1,164 @@
+---
+title: null
+output:
+  html_document:
+    theme: null
+    self_contained: true
+    pandoc_args: ["--metadata", "pagetitle=Vídeos e treinamentos do LCA"]
+editor_options:
+  chunk_output_type: console
+---
+
+```{r gerar_videos, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+library(htmltools)
+
+videos <- data.frame(
+  id = c(
+    "hVFYFa4HskI", "5emGNs0v-7s", "a5NdRrzm8ME", "gTFy6AovXe8", "e5ih23rRKz4",
+    "ARqX2r0cxt0", "qzCVWd_hijs", "d2g0imxT9iU", "tqxF3wS2JlM",
+    "UXFrG4g2pyw", "ayGDGfReEn8", "u5YY3KpuTj4", "oNKHckzWu0E",
+    "sizW4vQBkOw", "wjyaIUmC0zE", "0OIr89lhVLA", "KT9nE42P8ds",
+    "1-4RASAK-GM", "eg02Lvz7B2E",
+    "voC7KWH4Kpk", "EjDKUAYRqtk", "PP1JXBRvKFI", "3xkht1ReGZ4", "JMl8Wj-zE9U",
+    "Pr_K5RYT8jo", "w4QUYmyksdM", "ZTSNNUrt3KY", "VonXLAtS9Do", "2-NCUF6c5a4", "wc9w8bNzVhw"
+  ),
+  titulo = c(
+    "Noções básicas de segurança no laboratório",
+    "EPI — Parte 1: o jaleco",
+    "EPI — Parte 2: luvas",
+    "EPI — Parte 3: óculos de proteção",
+    "EPI — Parte 4: máscaras e respiradores",
+    "Como retirar as luvas",
+    "Equipamentos de proteção coletiva no laboratório de química",
+    "Prevenção de acidentes na manipulação de ácidos e bases",
+    "Ácidos e bases: armazenagem, exaustão e contato",
+    "Como lavar as vidrarias",
+    "Vidrarias no laboratório — Parte 1",
+    "Vidrarias no laboratório — Parte 2",
+    "Vidrarias no laboratório — Parte 3",
+    "Reagentes químicos — Parte 1: o rótulo",
+    "Reagentes químicos — Parte 2: manuseio e armazenamento",
+    "Reagentes químicos — Parte 3: preparo de soluções",
+    "Ajuste de menisco em soluções",
+    "Resíduos químicos — Parte 1",
+    "Resíduos químicos — Parte 2",
+    "Mini agitador magnético",
+    "Agitador magnético com aquecimento",
+    "Agitador vórtex",
+    "Balança analítica",
+    "POP 01 — Balança analítica Weblabor SP M254Ai",
+    "Balança semianalítica",
+    "Banho de ultrassom",
+    "Bomba de vácuo",
+    "Chapa de aquecimento",
+    "Dessecador de vidro com sílica",
+    "Estufa de convecção forçada"
+  ),
+  canal = c(
+    rep("Projeto AQuí", 7), "Centro de Mídias Educacionais do Acre — CEMEAC", "LabTube",
+    rep("Projeto AQuí", 14), "Laboratório de Controle de Qualidade Farmacêutica",
+    rep("Projeto AQuí", 6)
+  ),
+  categoria = c(
+    rep("seguranca", 9),
+    rep("vidrarias", 8),
+    rep("residuos", 2),
+    rep("equipamentos", 11)
+  ),
+  protocolo = c(
+    rep("../protocolos/1-1-seguranca-e-conduta-no-laboratorio.pdf", 9),
+    rep("../protocolos/index.html", 8),
+    rep("../protocolos/1-1-seguranca-e-conduta-no-laboratorio.pdf", 2),
+    NA, NA, NA,
+    "../protocolos/3-5-balancas-analiticas.pdf",
+    "../protocolos/3-5-balancas-analiticas.pdf",
+    "../protocolos/3-5-balancas-analiticas.pdf",
+    NA,
+    "../protocolos/3-9-sistema-de-filtracao-a-vacuo.pdf",
+    NA, NA, NA
+  ),
+  stringsAsFactors = FALSE
+)
+
+rotulos <- c(
+  seguranca = "Segurança e proteção",
+  vidrarias = "Vidrarias, reagentes e soluções",
+  residuos = "Resíduos químicos",
+  equipamentos = "Equipamentos"
+)
+
+criar_card <- function(item) {
+  url <- paste0("https://www.youtube.com/watch?v=", item$id)
+  miniatura <- paste0("https://i.ytimg.com/vi/", item$id, "/hqdefault.jpg")
+  tags$article(
+    class = "video-card",
+    `data-category` = item$categoria,
+    `data-search` = paste(item$titulo, item$canal, item$categoria),
+    tags$a(
+      class = "thumb-link",
+      href = url,
+      target = "_blank",
+      rel = "noopener noreferrer",
+      `aria-label` = paste("Assistir:", item$titulo),
+      tags$img(
+        src = miniatura,
+        alt = "",
+        loading = "lazy",
+        referrerpolicy = "no-referrer"
+      ),
+      tags$span(class = "play", `aria-hidden` = "true", "▶")
+    ),
+    tags$div(
+      class = "video-copy",
+      tags$span(class = "category-label", unname(rotulos[item$categoria])),
+      tags$h3(item$titulo),
+      tags$p(item$canal),
+      tags$div(
+        class = "video-actions",
+        tags$a(class = "watch", href = url, target = "_blank", rel = "noopener noreferrer", "Assistir no YouTube ↗"),
+        if (!is.na(item$protocolo)) tags$a(class = "protocol-link", href = item$protocolo, target = "_blank", rel = "noopener", "Protocolo relacionado")
+      )
+    )
+  )
+}
+
+criar_grupo <- function(categoria) {
+  dados <- videos[videos$categoria == categoria, , drop = FALSE]
+  cards <- lapply(seq_len(nrow(dados)), function(i) criar_card(as.list(dados[i, ])))
+  tags$section(
+    class = "group",
+    `data-group` = categoria,
+    tags$div(
+      class = "group-head",
+      tags$h2(unname(rotulos[categoria])),
+      tags$span(class = "group-count", nrow(dados), " vídeos")
+    ),
+    do.call(tags$div, c(list(class = "video-grid"), cards))
+  )
+}
+
+css <- HTML("
+:root{--ink:#17343b;--muted:#587078;--teal:#087b83;--dark:#075f66;--paper:#f5f9f8;--card:#fff;--line:#d7e5e2;--soft:#eaf4f2;--red:#d6423e}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:radial-gradient(circle at 92% 4%,rgba(8,123,131,.11),transparent 28rem),var(--paper);font-family:Inter,'Segoe UI',Arial,sans-serif;line-height:1.5}.main-container{width:100%;max-width:none;padding:0}.shell{width:min(1180px,calc(100% - 40px));margin:0 auto}.topbar{border-bottom:1px solid var(--line);background:rgba(245,249,248,.94)}.topbar .shell{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand,.back{text-decoration:none}.brand{font-weight:850}.back{color:var(--dark);font-size:.92rem;font-weight:750}.hero{padding:62px 0 34px}.eyebrow{margin:0 0 12px;color:var(--dark);font-size:.77rem;font-weight:850;letter-spacing:.16em;text-transform:uppercase}h1{max-width:880px;margin:0;font-size:clamp(2.5rem,6vw,4.7rem);line-height:1;letter-spacing:-.055em}.lead{max-width:790px;margin:20px 0 0;color:var(--muted);font-size:1.08rem}.summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.summary span{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8);color:var(--muted);font-size:.86rem;font-weight:750}.notice{margin-top:24px;padding:15px 18px;border-left:4px solid var(--teal);border-radius:0 12px 12px 0;background:#fff;color:var(--muted);box-shadow:0 5px 18px rgba(23,52,59,.04)}.notice strong{color:var(--ink)}.controls{position:sticky;top:0;z-index:5;padding:14px 0;border-block:1px solid var(--line);background:rgba(245,249,248,.95);backdrop-filter:blur(12px)}.control-row{display:grid;grid-template-columns:minmax(250px,1fr) auto;gap:14px;align-items:center}.search{width:100%;min-height:46px;padding:0 16px;border:1px solid #bfd4d0;border-radius:12px;background:#fff;color:var(--ink);font:inherit}.search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 4px rgba(8,123,131,.12)}.filters{display:flex;flex-wrap:wrap;gap:8px}.filter{min-height:40px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font:inherit;font-size:.84rem;font-weight:750;cursor:pointer}.filter:hover,.filter.is-active{border-color:var(--teal);background:var(--teal);color:#fff}main{padding:36px 0 80px}.group{margin-top:46px}.group:first-child{margin-top:0}.group-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:16px}.group h2{margin:0;font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.035em}.group-count{color:var(--muted);font-size:.85rem;font-weight:750}.video-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.video-card{overflow:hidden;border:1px solid var(--line);border-radius:17px;background:var(--card);box-shadow:0 5px 18px rgba(23,52,59,.05);transition:.18s}.video-card:hover{transform:translateY(-3px);border-color:#9ec9c4;box-shadow:0 14px 34px rgba(23,52,59,.10)}.thumb-link{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,#d8e9e6,#edf4f2)}.thumb-link img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .25s}.video-card:hover img{transform:scale(1.025)}.play{position:absolute;left:50%;top:50%;display:grid;width:54px;height:40px;place-items:center;transform:translate(-50%,-50%);border-radius:12px;background:rgba(214,66,62,.94);color:#fff;font-size:1rem;box-shadow:0 6px 18px rgba(0,0,0,.22)}.video-copy{padding:18px}.category-label{color:var(--dark);font-size:.72rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.video-card h3{min-height:2.7em;margin:8px 0 5px;font-size:1.03rem;line-height:1.32}.video-card p{margin:0;color:var(--muted);font-size:.84rem}.video-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:17px}.watch,.protocol-link{font-size:.82rem;font-weight:800;text-decoration:none}.watch{color:var(--dark)}.protocol-link{padding-left:12px;border-left:1px solid var(--line);color:var(--muted)}.watch:hover,.protocol-link:hover{text-decoration:underline}.empty{display:none;padding:42px 20px;border:1px dashed #acc8c4;border-radius:16px;color:var(--muted);text-align:center}footer{padding:24px 0 38px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}[hidden]{display:none!important}@media(max-width:900px){.control-row{grid-template-columns:1fr}.video-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:610px){.shell{width:min(100% - 24px,1180px)}.hero{padding:46px 0 30px}.controls{position:static}.filters{display:grid;grid-template-columns:repeat(2,1fr)}.video-grid{grid-template-columns:1fr}.video-card h3{min-height:auto}}
+")
+
+javascript <- HTML("
+const search=document.querySelector('#search');const filters=[...document.querySelectorAll('.filter')];const cards=[...document.querySelectorAll('.video-card')];const groups=[...document.querySelectorAll('.group')];const empty=document.querySelector('#empty');let active='all';const normalize=v=>v.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();function applyFilters(){const term=normalize(search.value);let visible=0;cards.forEach(card=>{const show=(active==='all'||card.dataset.category===active)&&(!term||normalize(card.dataset.search).includes(term));card.hidden=!show;if(show)visible++});groups.forEach(group=>{group.hidden=![...group.querySelectorAll('.video-card')].some(card=>!card.hidden)});empty.style.display=visible?'none':'block'}search.addEventListener('input',applyFilters);filters.forEach(button=>button.addEventListener('click',()=>{active=button.dataset.category;filters.forEach(x=>x.classList.toggle('is-active',x===button));applyFilters()}));
+")
+
+filtros <- lapply(names(rotulos), function(categoria) {
+  tags$button(class = "filter", type = "button", `data-category` = categoria, unname(rotulos[categoria]))
+})
+
+pagina <- tagList(
+  tags$style(css),
+  tags$header(class = "topbar", tags$div(class = "shell", tags$a(class = "brand", href = "../index.html", "Banco de Dados — LCA"), tags$a(class = "back", href = "../index.html", "← Voltar ao portal"))),
+  tags$section(class = "hero", tags$div(class = "shell", tags$p(class = "eyebrow", "Biblioteca audiovisual"), tags$h1("Vídeos e treinamentos"), tags$p(class = "lead", "Conteúdos selecionados para apoiar a integração, a capacitação e a consulta rápida dos estudantes do Laboratório de Ciências Ambientais."), tags$div(class = "summary", tags$span(nrow(videos), " vídeos"), tags$span(length(rotulos), " categorias"), tags$span("Acesso pelo YouTube")), tags$div(class = "notice", tags$strong("Importante: "), "os vídeos são materiais complementares. Eles não substituem os protocolos do LCA, o treinamento prático nem a supervisão de técnicos ou professores responsáveis."))),
+  tags$section(class = "controls", `aria-label` = "Filtros dos vídeos", tags$div(class = "shell control-row", tags$input(id = "search", class = "search", type = "search", placeholder = "Pesquisar por assunto, equipamento ou canal...", `aria-label` = "Pesquisar vídeos"), do.call(tags$div, c(list(class = "filters"), list(tags$button(class = "filter is-active", type = "button", `data-category` = "all", "Todos")), filtros)))),
+  do.call(tags$main, c(list(class = "shell"), lapply(names(rotulos), criar_grupo), list(tags$div(id = "empty", class = "empty", "Nenhum vídeo corresponde à pesquisa.")))),
+  tags$footer(tags$div(class = "shell", "Laboratório de Ciências Ambientais (LCA) · UENF · Conteúdo externo hospedado no YouTube")),
+  tags$script(javascript)
+)
+
+pagina
+```
